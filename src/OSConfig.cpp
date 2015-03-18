@@ -62,4 +62,5 @@ OSConfig::OSConfig(string configFile)
    }
    getline(config, temp, ':');
    config >> m_LogFile;
+   config.close();
 }
