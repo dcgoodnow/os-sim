@@ -30,7 +30,7 @@ class OS{
    public:
       OS(std::string configFile);
       ~OS();
-
+      void ReadProgram(std::vector<component> &data);
       void Run(std::vector<component>);
 };
 

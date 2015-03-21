@@ -83,12 +83,45 @@ OS::~OS()
    delete m_Logger;
 }
 
+/* Sample meta-data program
+ * ========================
+ *
+ *  Start
+ *  Program Meta-Data Code:
+ *  S(start)0; A(start)0; P(run)14; I(hard drive)13; O(hard drive)15;
+ *  P(run)12; O(hard drive)11; P(run)5; I(hard drive)12; O(hard drive)12;
+ *  P(run)5; O(monitor)10; P(run)12; O(monitor)10; A(end)0; S(end)0.
+ *  End Program Meta-Data Code.
+*/
+
+void OS::ReadProgram(vector<component> &data)
+{
+   ifstream metaFile;
+   metaFile.open(m_Filename.c_str(), fstream::in);
+   string temp;
+
+   //discard start line
+   getline(metaFile, temp);
+   component next;
+   do
+   {
+      metaFile >> next.type;
+      metaFile.get();
+      getline(metaFile, next.operation, ')');
+      metaFile >> next.cost;
+      metaFile.get();
+      data.push_back(next);
+   } while(!(next.type == 'S' && next.operation == "end"));
+   metaFile.close();
+}
+
 void OS::Run(vector<component> program)
 {
    timeval start, now;
    ostringstream message;
    pthread_t ioThread;
    int timeMult, delay;
+   void* status;
    gettimeofday(&start, NULL);
    m_Logger->println("0.000000 - Simulator program starting"); 
    for(vector<component>::iterator next = program.begin(); next < program.end(); next++)
@@ -143,6 +176,7 @@ void OS::Run(vector<component> program)
             message.flush();
             delay = timeMult * next->cost;
             pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
+            pthread_join(ioThread, &status);
             gettimeofday(&now, NULL);
             message << (now.tv_usec - start.tv_usec) << " - Process 1: ";
             if(next->operation.compare("hard drive") == 0)
@@ -170,6 +204,7 @@ void OS::Run(vector<component> program)
             message.flush();
             delay = timeMult * next->cost;
             pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
+            pthread_join(ioThread, &status);
             gettimeofday(&now, NULL);
             message << (now.tv_usec - start.tv_usec) << " - Process 1: ";
             if(next->operation.compare("hard drive") == 0)
