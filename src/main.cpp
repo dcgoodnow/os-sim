@@ -4,14 +4,10 @@
 #include <string>
 #include <cstdlib>
 #include <pthread.h>
+#include <OS.h>
 
 using namespace std;
 
-struct component {
-   char type;
-   string operation;
-   int cost;
-};
 
 struct readProgData {
    string fname;
