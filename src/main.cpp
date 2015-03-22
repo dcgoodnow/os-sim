@@ -9,12 +9,6 @@
 using namespace std;
 
 
-struct readProgData {
-   string fname;
-   vector<component> components;
-};
-
-void *ReadProgram(void * threadArg);
 int main(int argc, char* argv[])
 { 
    OS simos(argv[1]);

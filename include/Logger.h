@@ -7,8 +7,10 @@ class Logger
 {
 
    public:
-      virtual void print(std::string message) = 0;
-      virtual void println(std::string message) = 0;
+      virtual void print(const std::string& message) = 0;
+      virtual void println(const std::string& message) = 0;
+      virtual ~Logger(){}
 };
+
 
 #endif // __LOGGER_H

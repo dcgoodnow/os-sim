@@ -1,0 +1,89 @@
+0.000000 - Simulator program starting
+0.000146 - OS: preparing process 1
+0.000245 - Process 1: starting process 1
+0.000326 - Process 1: start processing action
+0.141502 - Process 1: end processing action
+0.141593 - Process 1: start hard drive input
+0.793078 - Process 1: end hard drive input
+0.793174 - Process 1: start hard drive output
+1.544145 - Process 1: end hard drive output
+1.544271 - Process 1: start processing action
+1.665227 - Process 1: end processing action
+1.665297 - Process 1: start hard drive output
+2.216382 - Process 1: end hard drive output
+2.216484 - Process 1: start processing action
+2.267261 - Process 1: end processing action
+2.267315 - Process 1: start hard drive input
+2.867844 - Process 1: end hard drive input
+2.867973 - Process 1: start hard drive output
+3.469131 - Process 1: end hard drive output
+3.469252 - Process 1: start processing action
+3.519913 - Process 1: end processing action
+3.520013 - Process 1: start monitor output
+3.771467 - Process 1: end monitor output
+3.771563 - Process 1: start processing action
+3.891939 - Process 1: end processing action
+3.891985 - Process 1: start monitor output
+4.143496 - Process 1: end monitor output
+4.143624 - Process 1: ending process 1
+4.143659 - OS: removing process 1
+0.000000 - Simulator program starting
+0.000054 - OS: preparing process 1
+0.000094 - Process 1: starting process 1
+0.000109 - Process 1: start processing action
+0.140349 - Process 1: end processing action
+0.140537 - Process 1: start hard drive input
+0.791118 - Process 1: end hard drive input
+0.791250 - Process 1: start hard drive output
+1.541702 - Process 1: end hard drive output
+1.541796 - Process 1: start processing action
+1.662008 - Process 1: end processing action
+1.662107 - Process 1: start hard drive output
+2.213059 - Process 1: end hard drive output
+2.213156 - Process 1: start processing action
+2.263901 - Process 1: end processing action
+2.263991 - Process 1: start hard drive input
+2.864678 - Process 1: end hard drive input
+2.864735 - Process 1: start hard drive output
+3.465511 - Process 1: end hard drive output
+3.465574 - Process 1: start processing action
+3.515956 - Process 1: end processing action
+3.516005 - Process 1: start monitor output
+3.766643 - Process 1: end monitor output
+3.766691 - Process 1: start processing action
+3.886819 - Process 1: end processing action
+3.886870 - Process 1: start monitor output
+4.137452 - Process 1: end monitor output
+4.137512 - Process 1: ending process 1
+4.137524 - OS: removing process 1
+4.137534 - Simulator program ending
+0.000000 - Simulator program starting
+0.000129 - OS: preparing process 1
+0.000227 - Process 1: starting process 1
+0.000299 - Process 1: start processing action
+0.141235 - Process 1: end processing action
+0.141327 - Process 1: start hard drive input
+0.793010 - Process 1: end hard drive input
+0.793135 - Process 1: start hard drive output
+1.544680 - Process 1: end hard drive output
+1.544814 - Process 1: start processing action
+1.665889 - Process 1: end processing action
+1.665984 - Process 1: start hard drive output
+2.216743 - Process 1: end hard drive output
+2.216870 - Process 1: start processing action
+2.267124 - Process 1: end processing action
+2.267220 - Process 1: start hard drive input
+2.867994 - Process 1: end hard drive input
+2.868188 - Process 1: start hard drive output
+3.469098 - Process 1: end hard drive output
+3.469195 - Process 1: start processing action
+3.520184 - Process 1: end processing action
+3.520247 - Process 1: start monitor output
+3.770960 - Process 1: end monitor output
+3.771056 - Process 1: start processing action
+3.891480 - Process 1: end processing action
+3.891579 - Process 1: start monitor output
+4.142327 - Process 1: end monitor output
+4.142422 - Process 1: ending process 1
+4.142436 - OS: removing process 1
+4.142447 - Simulator program ending

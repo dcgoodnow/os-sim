@@ -3,12 +3,13 @@
 
 using namespace std;
 
-void MonitorLogger::print(string message)
+
+void MonitorLogger::print(const string& message)
 {
    cout << message;
 }
 
-void MonitorLogger::println(string message)
+void MonitorLogger::println(const string& message)
 {
    cout << message << '\n';
 }

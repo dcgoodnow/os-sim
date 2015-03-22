@@ -6,8 +6,8 @@
 class MonitorLogger : public Logger
 {
    public:
-      void print(std::string message);
-      void println(std::string message);
+      void print(const std::string& message);
+      void println(const std::string& message);
 };
 
 

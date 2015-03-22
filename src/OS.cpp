@@ -1,6 +1,7 @@
-#include "OS.h"
+#include <OS.h>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <MonitorLogger.h>
 #include <FileLogger.h>
 #include <BothLogger.h>
@@ -10,6 +11,7 @@
 using namespace std;
 
 void* IO_OP(void* args);
+double time_diff(timeval x , timeval y);
 
 /* Configuration file spec
  * =======================
@@ -28,51 +30,65 @@ void* IO_OP(void* args);
  *
 */
 
-OS::OS(string configFile):
-   m_Time(0.000000)
+OS::OS(string configFile)
 {
    ifstream config;
    config.open(configFile.c_str(), fstream::in);
    
    string temp;
    getline(config, temp);
+   
    config >> temp; 
+   
    if(!temp.compare("Version/Phase:"))
    {
       //TODO: Error handling
    }
    config >> m_Version;
    getline(config, temp, ':');
+   
    if(!temp.compare("File Path"))
    {
       //TODO: Error handling
    }
    config >> m_Filename;
    getline(config, temp, ':');
+   
    config >> m_ProcTime;
    getline(config, temp, ':');
+   
    config >> m_DisplayTime;
    getline(config, temp, ':');
+   
    config >> m_HardDriveTime;
    getline(config, temp, ':');
+   
    config >> m_PrinterTime;
    getline(config, temp, ':');
+   
    config >> m_KeyboardTime;
+   
    getline(config, temp, ':');
-   config >> temp;
-   switch(temp.c_str()[7])
+   getline(config, temp);
+   switch(temp.c_str()[8])
    {
       case 'B':
+   
          getline(config, temp, ':');
+   
          config >> m_LogFile;
          m_Logger = new BothLogger(m_LogFile);
+         break;
       case 'M':
+   
          m_Logger = new MonitorLogger();
+         break;
       case 'F':
+   
          getline(config, temp, ':');
+   
          config >> m_LogFile;
          m_Logger = new FileLogger(m_LogFile);
-      default:
          break;
    }
    config.close();
@@ -115,10 +131,12 @@ void OS::ReadProgram(vector<component> &data)
    metaFile.close();
 }
 
-void OS::Run(vector<component> program)
+void OS::Run(vector<component> &program)
 {
    timeval start, now;
    ostringstream message;
+   message.setf(ios::fixed, ios::floatfield);
+   message.precision(6);
    pthread_t ioThread;
    int timeMult, delay;
    void* status;
@@ -127,7 +145,7 @@ void OS::Run(vector<component> program)
    for(vector<component>::iterator next = program.begin(); next < program.end(); next++)
    {
       gettimeofday(&now, NULL);
-      message << (now.tv_usec - start.tv_usec);
+      message << time_diff(start, now);
       switch(next->type)
       {
          case 'S':
@@ -155,10 +173,11 @@ void OS::Run(vector<component> program)
          case 'P':
             message << " - Process 1: start processing action";
             m_Logger->println(message.str());
-            message.flush();
+            message.str("");
             usleep(m_ProcTime * next->cost * 1000);
             gettimeofday(&now, NULL);
-            message << (now.tv_usec - start.tv_usec) << " - Process 1: end processing action";
+            
+            message << time_diff(start, now) << " - Process 1: end processing action";
             break;
          case 'I':
             message << " - Process 1: ";
@@ -173,12 +192,13 @@ void OS::Run(vector<component> program)
                timeMult = m_KeyboardTime;
             }
             m_Logger->println(message.str());
-            message.flush();
+            message.str("");
             delay = timeMult * next->cost;
             pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
             pthread_join(ioThread, &status);
             gettimeofday(&now, NULL);
-            message << (now.tv_usec - start.tv_usec) << " - Process 1: ";
+            
+            message << time_diff(start, now) << " - Process 1: ";
             if(next->operation.compare("hard drive") == 0)
             {
                message << "end hard drive input";
@@ -201,12 +221,13 @@ void OS::Run(vector<component> program)
                timeMult = m_DisplayTime;
             }
             m_Logger->println(message.str());
-            message.flush();
+            message.str("");
             delay = timeMult * next->cost;
             pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
             pthread_join(ioThread, &status);
             gettimeofday(&now, NULL);
-            message << (now.tv_usec - start.tv_usec) << " - Process 1: ";
+            
+            message << time_diff(start, now) << " - Process 1: ";
             if(next->operation.compare("hard drive") == 0)
             {
                message << "end hard drive output";
@@ -218,11 +239,27 @@ void OS::Run(vector<component> program)
             break;
       }
       m_Logger->println(message.str());
-      message.flush();
+      message.str("");
    }
+   gettimeofday(&now, NULL);
+   message << time_diff(start, now) << " - Simulator program ending";
+   m_Logger->println(message.str());
 }
 
 void* IO_OP(void* args)
 {
    usleep(*(int *)args * 1000);
+   pthread_exit(NULL);
+}
+
+double time_diff(timeval x , timeval y)
+{
+   double x_ms , y_ms , diff;
+
+   x_ms = (double)x.tv_sec*1000000 + (double)x.tv_usec;
+   y_ms = (double)y.tv_sec*1000000 + (double)y.tv_usec;
+
+   diff = (double)y_ms - (double)x_ms;
+
+   return diff / 1000000;
 }

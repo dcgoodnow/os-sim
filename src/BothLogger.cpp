@@ -4,15 +4,15 @@
 
 using namespace std;
 
-BothLogger::BothLogger(const string &file): m_FileLogger(file) {}
+BothLogger::BothLogger(const string& file): m_FileLogger(file) {}
 
-void BothLogger::print(string message)
+void BothLogger::print(const string& message)
 {
    cout << message;
    m_FileLogger.print(message);
 }
 
-void BothLogger::println(string message)
+void BothLogger::println(const string& message)
 {
    cout << message << '\n';
    m_FileLogger.println(message);
