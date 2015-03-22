@@ -1,15 +1,16 @@
-IDIR = ../include
+IDIR = include
+SDIR = src
 CXX = g++
 CXXFLAGS = -g -pthread -Wall -I$(IDIR)
 
-ODIR = ../obj
+ODIR = obj
 _DEPS = OS.h MonitorLogger.h BothLogger.h FileLogger.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = OS.o MonitorLogger.o BothLogger.o FileLogger.o main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(ODIR)/%.o: %.cpp $(DEPS)
+$(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 os-sim: $(OBJ)
