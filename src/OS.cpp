@@ -36,19 +36,21 @@ double time_diff(timeval x , timeval y);
  *
 */
 
-OS::OS(string configFile)
+OS::OS(string configFile):
+   m_Logger(NULL)
 {
    m_ConfigFile = configFile;
 }
 
-void OS::ReadConfig() throw (ConfigReadException)
+void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
 {
    //open configuration file
    ifstream config;
    config.open(m_ConfigFile.c_str(), fstream::in);
    if(config.fail())
    {
-      throw ConfigReadException;
+      config.close();
+      throw ConfigReadException();
    }
    
    string temp;
@@ -59,18 +61,15 @@ void OS::ReadConfig() throw (ConfigReadException)
    //Discard version/phase descriptor
    getline(config, temp, ':');
    
-   if(temp.compare("Version/Phase:"))
+   if(temp.compare("Version/Phase") != 0)
    {
-      //TODO: Error handling
+      config.close();
+      throw MalformedConfigException();
    }
    config >> m_Version;
 
    getline(config, temp, ':');
    
-   if(!temp.compare("File Path"))
-   {
-      //TODO: Error handling
-   }
    config >> m_Filename;
 
    getline(config, temp, ':');
@@ -119,7 +118,10 @@ void OS::ReadConfig() throw (ConfigReadException)
 
 OS::~OS()
 {
-   delete m_Logger;
+   if(m_Logger != NULL)
+   {
+      delete m_Logger;
+   }
 }
 
 /* Sample meta-data program
@@ -134,10 +136,16 @@ OS::~OS()
 */
 
 
-void OS::ReadProgram(vector<component> &data)
+void OS::ReadProgram(vector<component> &data) throw(MetadataReadException)
 {
    ifstream metaFile;
    metaFile.open(m_Filename.c_str(), fstream::in);
+
+   if(metaFile.fail())
+   {
+      metaFile.close();
+      throw MetadataReadException();
+   }
    string temp;
 
    //discard start line

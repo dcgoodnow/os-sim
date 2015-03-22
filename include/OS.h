@@ -27,6 +27,22 @@ class ConfigReadException: public std::exception
    }
 };
 
+class MalformedConfigException: public std::exception
+{
+   virtual const char* what() const throw()
+   {
+      return "Configuration file is malformed";
+   }
+};
+
+class MetadataReadException: public std::exception
+{
+   virtual const char* what() const throw()
+   {
+      return "Metadata file could not be opened";
+   }
+};
+
 /* OS Class
  * ========
  *
@@ -68,10 +84,10 @@ class OS{
       OS(std::string configFile);
       ~OS();
 
-      void ReadConfig() throw (ConfigReadException);
+      void ReadConfig() throw (ConfigReadException, MalformedConfigException);
 
       //Reads a the metadata program file into a vector of components
-      void ReadProgram(std::vector<component> &data);
+      void ReadProgram(std::vector<component> &data) throw (MetadataReadException);
 
       //Runs the simulator using the given vector of components
       void Run(std::vector<component>&);
