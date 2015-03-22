@@ -1,9 +1,4 @@
 #include <vector>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <cstdlib>
-#include <pthread.h>
 #include <OS.h>
 
 using namespace std;
