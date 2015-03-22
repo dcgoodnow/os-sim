@@ -1,3 +1,9 @@
+/* OS.cpp
+ * Daniel Goodnow
+ *
+ * Last Modified: Sat 21 Mar 2015 09:46:59 PM PDT
+ *
+*/
 #include <OS.h>
 #include <fstream>
 #include <sstream>
@@ -32,19 +38,24 @@ double time_diff(timeval x , timeval y);
 
 OS::OS(string configFile)
 {
+   //open configuration file
    ifstream config;
    config.open(configFile.c_str(), fstream::in);
    
    string temp;
+
+   //discard first line 
    getline(config, temp);
    
-   config >> temp; 
+   //Discard version/phase descriptor
+   getline(config, temp, ':');
    
-   if(!temp.compare("Version/Phase:"))
+   if(temp.compare("Version/Phase:"))
    {
       //TODO: Error handling
    }
    config >> m_Version;
+
    getline(config, temp, ':');
    
    if(!temp.compare("File Path"))
@@ -52,42 +63,44 @@ OS::OS(string configFile)
       //TODO: Error handling
    }
    config >> m_Filename;
+
    getline(config, temp, ':');
-   
    config >> m_ProcTime;
+
    getline(config, temp, ':');
-   
    config >> m_DisplayTime;
+
    getline(config, temp, ':');
-   
    config >> m_HardDriveTime;
+
    getline(config, temp, ':');
-   
    config >> m_PrinterTime;
+
    getline(config, temp, ':');
-   
    config >> m_KeyboardTime;
-   
+
    getline(config, temp, ':');
+
+   //get Log type
    getline(config, temp);
+   
+   //The log type is unique based on the beginning character of the third word. 
    switch(temp.c_str()[8])
    {
       case 'B':
-   
          getline(config, temp, ':');
-   
          config >> m_LogFile;
+
          m_Logger = new BothLogger(m_LogFile);
          break;
       case 'M':
-   
+         //we don't care about the logfile in this case
          m_Logger = new MonitorLogger();
          break;
       case 'F':
-   
          getline(config, temp, ':');
-   
          config >> m_LogFile;
+
          m_Logger = new FileLogger(m_LogFile);
          break;
    }
@@ -110,6 +123,7 @@ OS::~OS()
  *  End Program Meta-Data Code.
 */
 
+
 void OS::ReadProgram(vector<component> &data)
 {
    ifstream metaFile;
@@ -119,12 +133,18 @@ void OS::ReadProgram(vector<component> &data)
    //discard start line
    getline(metaFile, temp);
    component next;
+
+   //Stop condition is when the type is S and operation is end
    do
    {
       metaFile >> next.type;
+
+      //skip open paren character
       metaFile.get();
       getline(metaFile, next.operation, ')');
       metaFile >> next.cost;
+
+      //skip semicolon
       metaFile.get();
       data.push_back(next);
    } while(!(next.type == 'S' && next.operation == "end"));
@@ -134,12 +154,15 @@ void OS::ReadProgram(vector<component> &data)
 void OS::Run(vector<component> &program)
 {
    timeval start, now;
+   pthread_t ioThread;
+   void* status;
+   int timeMult, delay;
+
+   //used for building the log messages
    ostringstream message;
    message.setf(ios::fixed, ios::floatfield);
    message.precision(6);
-   pthread_t ioThread;
-   int timeMult, delay;
-   void* status;
+
    gettimeofday(&start, NULL);
    m_Logger->println("0.000000 - Simulator program starting"); 
    for(vector<component>::iterator next = program.begin(); next < program.end(); next++)
@@ -148,7 +171,7 @@ void OS::Run(vector<component> &program)
       message << time_diff(start, now);
       switch(next->type)
       {
-         case 'S':
+         case 'S':  //O/S Control
             message << " - OS: ";
             if(next->operation.compare("start") == 0)
             {
@@ -159,7 +182,7 @@ void OS::Run(vector<component> &program)
                message << "removing process 1";
             }
             break;
-         case 'A':
+         case 'A': //Process start/stop
             message << " - Process 1: ";
             if(next->operation.compare("start") == 0)
             {
@@ -170,16 +193,18 @@ void OS::Run(vector<component> &program)
                message << "ending process 1";
             }
             break;
-         case 'P':
+         case 'P':  //Processing
             message << " - Process 1: start processing action";
             m_Logger->println(message.str());
+
+            //reset message
             message.str("");
             usleep(m_ProcTime * next->cost * 1000);
             gettimeofday(&now, NULL);
             
             message << time_diff(start, now) << " - Process 1: end processing action";
             break;
-         case 'I':
+         case 'I': //Input
             message << " - Process 1: ";
             if(next->operation.compare("hard drive") == 0)
             {
@@ -194,6 +219,8 @@ void OS::Run(vector<component> &program)
             m_Logger->println(message.str());
             message.str("");
             delay = timeMult * next->cost;
+
+            //perform I/O operation in separate thread
             pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
             pthread_join(ioThread, &status);
             gettimeofday(&now, NULL);
@@ -208,7 +235,7 @@ void OS::Run(vector<component> &program)
                message << "end keyboard input";
             }
             break;
-         case 'O':
+         case 'O':  //Output
             message << " - Process 1: ";
             if(next->operation.compare("hard drive") == 0)
             {
@@ -223,6 +250,8 @@ void OS::Run(vector<component> &program)
             m_Logger->println(message.str());
             message.str("");
             delay = timeMult * next->cost;
+
+            //Perform ouput operation in separate thread
             pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
             pthread_join(ioThread, &status);
             gettimeofday(&now, NULL);
@@ -246,20 +275,32 @@ void OS::Run(vector<component> &program)
    m_Logger->println(message.str());
 }
 
+/*
+ * Simple threadable function which sleeps for the amount specified. Uses
+ * an int type as the passed argument
+*/
 void* IO_OP(void* args)
 {
    usleep(*(int *)args * 1000);
    pthread_exit(NULL);
 }
 
+/*
+ * Calculates the difference in seconds (with microsecond precision)between 
+ * two timevalue types. 
+*/
 double time_diff(timeval x , timeval y)
 {
-   double x_ms , y_ms , diff;
+   double x_us , y_us , diff;
 
-   x_ms = (double)x.tv_sec*1000000 + (double)x.tv_usec;
-   y_ms = (double)y.tv_sec*1000000 + (double)y.tv_usec;
+   //get timeval x in microseconds
+   x_us = (double)x.tv_sec*1000000 + (double)x.tv_usec;
 
-   diff = (double)y_ms - (double)x_ms;
+   //get timeval y in microseconds
+   y_us = (double)y.tv_sec*1000000 + (double)y.tv_usec;
 
+   diff = (double)y_us - (double)x_us;
+
+   //Convert back to seconds
    return diff / 1000000;
 }
