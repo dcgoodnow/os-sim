@@ -11,6 +11,7 @@ _OBJ = OS.o MonitorLogger.o BothLogger.o FileLogger.o main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
+	mkdir -p $(ODIR)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 os-sim: $(OBJ)
