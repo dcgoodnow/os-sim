@@ -14,11 +14,11 @@ $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
 	mkdir -p $(ODIR)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-os-sim: $(OBJ)
+simulator: $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ simulator
 	
