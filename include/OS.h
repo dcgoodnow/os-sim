@@ -2,7 +2,7 @@
  * OS.H
  * Daniel Goodnow
  *
- * Last Modified: Sat 21 Mar 2015 09:19:40 PM PDT
+ * Last Modified: Sun 22 Mar 2015 03:56:37 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -10,12 +10,21 @@
 #include <string>
 #include <vector>
 #include <Logger.h>
+#include <exception>
 
 // Structure for meta program actions. 
 struct component {
    char type;
    std::string operation;
    int cost;
+};
+
+class ConfigReadException: public std::exception
+{
+   virtual const char* what() const throw()
+   {
+      return "Could not read config file";
+   }
 };
 
 /* OS Class
@@ -27,6 +36,8 @@ struct component {
 */
 class OS{
    private:
+      std::string m_ConfigFile;
+
       float m_Version;
 
       //program metadata file
@@ -56,6 +67,8 @@ class OS{
    public:
       OS(std::string configFile);
       ~OS();
+
+      void ReadConfig() throw (ConfigReadException);
 
       //Reads a the metadata program file into a vector of components
       void ReadProgram(std::vector<component> &data);

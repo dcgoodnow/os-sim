@@ -1,7 +1,7 @@
 /* OS.cpp
  * Daniel Goodnow
  *
- * Last Modified: Sat 21 Mar 2015 09:46:59 PM PDT
+ * Last Modified: Sun 22 Mar 2015 03:59:34 AM PDT
  *
 */
 #include <OS.h>
@@ -38,9 +38,18 @@ double time_diff(timeval x , timeval y);
 
 OS::OS(string configFile)
 {
+   m_ConfigFile = configFile;
+}
+
+void OS::ReadConfig() throw (ConfigReadException)
+{
    //open configuration file
    ifstream config;
-   config.open(configFile.c_str(), fstream::in);
+   config.open(m_ConfigFile.c_str(), fstream::in);
+   if(config.fail())
+   {
+      throw ConfigReadException;
+   }
    
    string temp;
 
@@ -105,6 +114,7 @@ OS::OS(string configFile)
          break;
    }
    config.close();
+
 }
 
 OS::~OS()
@@ -150,6 +160,7 @@ void OS::ReadProgram(vector<component> &data)
    } while(!(next.type == 'S' && next.operation == "end"));
    metaFile.close();
 }
+
 
 void OS::Run(vector<component> &program)
 {
