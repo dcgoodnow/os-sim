@@ -7,7 +7,7 @@ ODIR = obj
 _DEPS = OS.h MonitorLogger.h BothLogger.h FileLogger.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = OS.o MonitorLogger.o BothLogger.o FileLogger.o main.o
+_OBJ = OS.o MonitorLogger.o BothLogger.o FileLogger.o phase2test.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
