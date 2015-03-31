@@ -1,7 +1,6 @@
 /* OS.cpp
- * Daniel Goodnow
  *
- * Last Modified: Sun 22 Mar 2015 03:59:34 AM PDT
+ * Last Modified: Mon 30 Mar 2015 07:07:14 PM PDT
  *
 */
 #include <OS.h>
@@ -71,6 +70,22 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    getline(config, temp, ':');
    
    config >> m_Filename;
+   getline(config, temp, ':');
+   
+   config >> temp;
+   if(temp.compare("FIFO") == 0)
+   {
+      m_ScheduleType = FIFO;
+   }
+   else if(temp.compare("SJF") == 0)
+   {
+      m_ScheduleType = SJF;
+   }
+   else
+   {
+      config.close();
+      throw MalformedConfigException();
+   }
 
    getline(config, temp, ':');
    config >> m_ProcTime;
@@ -322,4 +337,43 @@ double time_diff(timeval x , timeval y)
 
    //Convert back to seconds
    return diff / 1000000;
+}
+
+int OS::ComputeCost(vector<component> program)
+{
+   int cost = 0;
+   for(vector<component>::iterator next = program.begin(); next < program.end(); next++)
+   {
+      switch(next->type)
+      {
+         case 'S':
+         case 'A':
+            //these operations have no cost
+            break;
+         case 'P':
+            cost += next->cost * m_ProcTime;
+            break;
+         case 'I':
+            if(next->operation.compare("hard drive") == 0)
+            { 
+               cost += next->cost * m_HardDriveTime;
+            }
+            else
+            {
+               cost += next->cost * m_KeyboardTime;
+            }
+            break;
+         case 'O':
+            if(next->operation.compare("hard drive") == 0)
+            {
+               cost += next->cost * m_HardDriveTime;
+            }
+            else
+            {
+               cost += next->cost * m_DisplayTime;
+            }
+            break;
+      }
+   }
+   return cost;
 }

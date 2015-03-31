@@ -2,7 +2,7 @@
  * OS.H
  * Daniel Goodnow
  *
- * Last Modified: Sun 22 Mar 2015 03:56:37 AM PDT
+ * Last Modified: Mon 30 Mar 2015 06:40:05 PM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -52,12 +52,17 @@ class MetadataReadException: public std::exception
 */
 class OS{
    private:
+      enum SCHEDULING {FIFO, SJF};
+
       std::string m_ConfigFile;
 
       float m_Version;
 
       //program metadata file
       std::string m_Filename;
+
+      //scheduling type
+      SCHEDULING m_ScheduleType;
 
       //Processor cycle duration (msec)
       int m_ProcTime;
@@ -80,6 +85,9 @@ class OS{
       //Destination logfile if logging is sent to a file
       std::string m_LogFile;
 
+      /*====private functions====*/
+
+
    public:
       OS(std::string configFile);
       ~OS();
@@ -91,6 +99,9 @@ class OS{
 
       //Runs the simulator using the given vector of components
       void Run(std::vector<component>&);
+
+      //compute total time required for a program
+      int ComputeCost(std::vector<component> program);
 };
 
 
