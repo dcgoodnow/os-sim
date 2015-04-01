@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Wed 01 Apr 2015 12:30:23 AM PDT
+ * Last Modified: Wed 01 Apr 2015 12:55:45 AM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -13,9 +13,17 @@ using namespace std;
 class ProcessControlBlock
 {
    private:
+
+      //metadata commands
       vector<component>* m_ProgramCode;
+
+      //process identifier number
       int m_PID;
+      
+      //process IDs are assigned in ascending order, starting at 1
       static int nextPID;
+
+      //Cost of running the metadata commands
       int m_Cost;
 
       /** Private Functions **/
@@ -25,6 +33,8 @@ class ProcessControlBlock
 
 
    public:
+
+      //constructor
       ProcessControlBlock(vector<component>*);
       int GetPID();
       vector<component>::iterator GetBeginIter();
