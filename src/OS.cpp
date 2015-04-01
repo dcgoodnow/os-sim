@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Wed 01 Apr 2015 12:40:51 AM PDT
+ * Last Modified: Wed 01 Apr 2015 03:51:05 PM PDT
  *
 */
 #include <OS.h>
@@ -59,7 +59,7 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    getline(config, temp);
    
    //Discard version/phase descriptor
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    
    if(temp.compare("Version/Phase") != 0)
    {
@@ -68,10 +68,11 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    }
    config >> m_Version;
 
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    
    config >> m_Filename;
-   getline(config, temp, ':');
+   config.ignore(255, ':');
+   
    
    config >> temp;
    if(temp.compare("FIFO") == 0)
@@ -88,19 +89,19 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
       throw MalformedConfigException();
    }
 
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    config >> m_ProcTime;
 
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    config >> m_DisplayTime;
 
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    config >> m_HardDriveTime;
 
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    config >> m_PrinterTime;
 
-   getline(config, temp, ':');
+   config.ignore(255, ':');
    config >> m_KeyboardTime;
 
    getline(config, temp, ':');
@@ -112,7 +113,7 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    switch(temp.c_str()[8])
    {
       case 'B':
-         getline(config, temp, ':');
+         config.ignore(255, ':');
          config >> m_LogFile;
 
          m_Logger = new BothLogger(m_LogFile);
@@ -122,7 +123,7 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
          m_Logger = new MonitorLogger();
          break;
       case 'F':
-         getline(config, temp, ':');
+         config.ignore(255, ':');
          config >> m_LogFile;
 
          m_Logger = new FileLogger(m_LogFile);
