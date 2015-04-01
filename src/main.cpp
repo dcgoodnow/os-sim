@@ -1,46 +1,31 @@
-#include <vector>
-#include <OS.h>
 #include <iostream>
+#include <OS.h>
+#include <vector>
 
 using namespace std;
 
-
 int main(int argc, char* argv[])
-{ 
+{
+   OS os(argv[1]);
 
-   if(argc < 2)
-   {
-      cerr << "No configuration file.\n";
-      return -1;
+   try{
+      os.ReadConfig();
    }
-   OS simos(argv[1]);
+   catch(exception e)
+   {
+      cout << e.what();
+   }
 
    vector<component> comps;
-   try
-   {
-      simos.ReadConfig();
+   try{
+      os.ReadPrograms();
    }
-   catch(ConfigReadException)
+   catch(exception e)
    {
-      cerr << "ERROR: could not read configuration file.\n";
-      return -1;
-   }
-   catch(MalformedConfigException)
-   {
-      cerr << "ERROR: Configuration file is malformed.\n";
-      return -1;
+      cout << e.what();
    }
 
-   try
-   {
-      simos.ReadProgram(comps);
-   }
-   catch(MetadataReadException)
-   {
-      cerr << "ERROR: Could not read metadata file.\n";
-      return -1;
-   }
-   simos.Run(comps);
-   return 0;
+   os.Run();
+
+
 }
-
