@@ -2,7 +2,7 @@
  * OS.H
  * Daniel Goodnow
  *
- * Last Modified: Tue 31 Mar 2015 10:39:37 PM PDT
+ * Last Modified: Wed 01 Apr 2015 12:37:28 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -97,7 +97,7 @@ class OS{
       void Run();
 
       //compute total time required for a program
-      int ComputeCost(std::vector<component> program);
+      int ComputeCost(std::vector<component>::iterator begin, std::vector<component>::iterator end);
 };
 
 

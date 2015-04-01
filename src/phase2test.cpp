@@ -18,13 +18,14 @@ int main(int argc, char* argv[])
 
    vector<component> comps;
    try{
-      os.ReadProgram(comps);
+      os.ReadPrograms();
    }
    catch(exception e)
    {
       cout << e.what();
    }
 
-   cout << "\n\n\n" << os.ComputeCost(comps);
+   os.Run();
+
 
 }

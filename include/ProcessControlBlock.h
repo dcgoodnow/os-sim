@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Tue 31 Mar 2015 10:45:14 PM PDT
+ * Last Modified: Wed 01 Apr 2015 12:30:23 AM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -16,6 +16,12 @@ class ProcessControlBlock
       vector<component>* m_ProgramCode;
       int m_PID;
       static int nextPID;
+      int m_Cost;
+
+      /** Private Functions **/
+
+      //compute cost of a program
+      int ComputeCost();
 
 
    public:
@@ -23,6 +29,9 @@ class ProcessControlBlock
       int GetPID();
       vector<component>::iterator GetBeginIter();
       vector<component>::iterator GetEndIter();
+      static bool CompareCost(const ProcessControlBlock& lhs, const ProcessControlBlock& rhs);
+      void SetCost(const int cost);
+      int GetCost();
 };
 
 

@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Tue 31 Mar 2015 11:56:32 PM PDT
+ * Last Modified: Wed 01 Apr 2015 12:40:51 AM PDT
  *
 */
 #include <OS.h>
@@ -12,6 +12,7 @@
 #include <BothLogger.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -128,7 +129,6 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
          break;
    }
    config.close();
-
 }
 
 OS::~OS()
@@ -194,6 +194,22 @@ void OS::ReadPrograms() throw(MetadataReadException)
 
 void OS::Run()
 {
+   //calculate process order
+   switch(m_ScheduleType)
+   {
+      case FIFO:
+         //already in fifo order
+         break;
+      case SJF:
+         for(vector<ProcessControlBlock>::iterator nextPCB = m_Programs.begin(); nextPCB < m_Programs.end();
+               nextPCB++)
+         {
+            nextPCB->SetCost(ComputeCost(nextPCB->GetBeginIter(), nextPCB->GetEndIter()));
+         }
+         break;
+   }
+   sort(m_Programs.begin(), m_Programs.end(), ProcessControlBlock::CompareCost);
+
    timeval start, now;
    pthread_t ioThread;
    void* status;
@@ -328,6 +344,45 @@ void OS::Run()
    m_Logger->println(message.str());
 }
 
+int OS::ComputeCost(vector<component>::iterator begin, vector<component>::iterator end)
+{
+   int cost = 0;
+   for(vector<component>::iterator nextComp = begin; nextComp < end; nextComp++)
+   {
+      switch(nextComp->type)
+      {
+         case 'S':
+         case 'A':
+            //these operations have no cost
+            break;
+         case 'P':
+            cost += nextComp->cost * m_ProcTime;
+            break;
+         case 'I':
+            if(nextComp->operation.compare("hard drive") == 0)
+            { 
+               cost += nextComp->cost * m_HardDriveTime;
+            }
+            else
+            {
+               cost += nextComp->cost * m_KeyboardTime;
+            }
+            break;
+         case 'O':
+            if(nextComp->operation.compare("hard drive") == 0)
+            {
+               cost += nextComp->cost * m_HardDriveTime;
+            }
+            else
+            {
+               cost += nextComp->cost * m_DisplayTime;
+            }
+            break;
+      }
+   }
+   return cost;
+}
+
 /*
  * Simple threadable function which sleeps for the amount specified. Uses
  * an int type as the passed argument
@@ -358,41 +413,3 @@ double time_diff(timeval x , timeval y)
    return diff / 1000000;
 }
 
-int OS::ComputeCost(vector<component> program)
-{
-   int cost = 0;
-   for(vector<component>::iterator next = program.begin(); next < program.end(); next++)
-   {
-      switch(next->type)
-      {
-         case 'S':
-         case 'A':
-            //these operations have no cost
-            break;
-         case 'P':
-            cost += next->cost * m_ProcTime;
-            break;
-         case 'I':
-            if(next->operation.compare("hard drive") == 0)
-            { 
-               cost += next->cost * m_HardDriveTime;
-            }
-            else
-            {
-               cost += next->cost * m_KeyboardTime;
-            }
-            break;
-         case 'O':
-            if(next->operation.compare("hard drive") == 0)
-            {
-               cost += next->cost * m_HardDriveTime;
-            }
-            else
-            {
-               cost += next->cost * m_DisplayTime;
-            }
-            break;
-      }
-   }
-   return cost;
-}
