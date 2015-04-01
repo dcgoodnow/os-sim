@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Tue 31 Mar 2015 10:39:28 PM PDT
+ * Last Modified: Tue 31 Mar 2015 11:21:52 PM PDT
  *
 */
 #include <OS.h>
@@ -185,7 +185,9 @@ void OS::ReadPrograms() throw(MetadataReadException)
       } while(!(nextComp.type == 'A' && nextComp.operation == "end"));
       ProcessControlBlock pcb(nextProc);
       m_Programs.push_back(pcb);
-   } while(!(nextComp.type == 'S' && nextComp.operation == "end"));
+      //skip space
+      metaFile.get();
+   } while(metaFile.peek() != 'S');
    metaFile.close();
 }
 
@@ -217,26 +219,26 @@ void OS::Run()
                message << " - OS: ";
                if(nextOperation->operation.compare("start") == 0)
                {
-                  message << "preparing process 1";
+                  message << "preparing process " << nextPCB->GetPID();
                }
                else
                {
-                  message << "removing process 1";
+                  message << "removing process " << nextPCB->GetPID();
                }
                break;
             case 'A': //Process start/stop
-               message << " - Process 1: ";
+               message << " - Process " << nextPCB->GetPID() << ": ";
                if(nextOperation->operation.compare("start") == 0)
                {
-                  message << "starting process 1";
+                  message << "starting process " << nextPCB->GetPID();
                }
                else
                {
-                  message << "ending process 1";
+                  message << "ending process " << nextPCB->GetPID();
                }
                break;
             case 'P':  //Processing
-               message << " - Process 1: start processing action";
+               message << " - Process " << nextPCB->GetPID() << ": start processing action";
                m_Logger->println(message.str());
 
                //reset message
@@ -244,10 +246,10 @@ void OS::Run()
                usleep(m_ProcTime * nextOperation->cost * 1000);
                gettimeofday(&now, NULL);
                
-               message << time_diff(start, now) << " - Process 1: end processing action";
+               message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << " end processing action";
                break;
             case 'I': //Input
-               message << " - Process 1: ";
+               message << " - Process " << nextPCB->GetPID() << ": ";
                if(nextOperation->operation.compare("hard drive") == 0)
                {
                   message << "start hard drive input";
@@ -267,7 +269,7 @@ void OS::Run()
                pthread_join(ioThread, &status);
                gettimeofday(&now, NULL);
                
-               message << time_diff(start, now) << " - Process 1: ";
+               message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << ": ";
                if(nextOperation->operation.compare("hard drive") == 0)
                {
                   message << "end hard drive input";
@@ -278,7 +280,7 @@ void OS::Run()
                }
                break;
             case 'O':  //Output
-               message << " - Process 1: ";
+               message << " - Process " << nextPCB->GetPID() << ": ";
                if(nextOperation->operation.compare("hard drive") == 0)
                {
                   message << "start hard drive output";
@@ -298,7 +300,7 @@ void OS::Run()
                pthread_join(ioThread, &status);
                gettimeofday(&now, NULL);
                
-               message << time_diff(start, now) << " - Process 1: ";
+               message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << ": ";
                if(nextOperation->operation.compare("hard drive") == 0)
                {
                   message << "end hard drive output";
