@@ -2,7 +2,7 @@
  * OS.H
  * Daniel Goodnow
  *
- * Last Modified: Mon 30 Mar 2015 06:40:05 PM PDT
+ * Last Modified: Tue 31 Mar 2015 10:08:21 PM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -11,13 +11,9 @@
 #include <vector>
 #include <Logger.h>
 #include <exception>
+#include <Component.h>
+#include <ProcessControlBlock.h>
 
-// Structure for meta program actions. 
-struct component {
-   char type;
-   std::string operation;
-   int cost;
-};
 
 class ConfigReadException: public std::exception
 {
@@ -85,8 +81,8 @@ class OS{
       //Destination logfile if logging is sent to a file
       std::string m_LogFile;
 
-      /*====private functions====*/
-
+      //programs to run
+      std::vector<ProcessControlBlock> m_Programs;
 
    public:
       OS(std::string configFile);
@@ -95,7 +91,7 @@ class OS{
       void ReadConfig() throw (ConfigReadException, MalformedConfigException);
 
       //Reads a the metadata program file into a vector of components
-      void ReadProgram(std::vector<component> &data) throw (MetadataReadException);
+      void ReadPrograms() throw (MetadataReadException);
 
       //Runs the simulator using the given vector of components
       void Run(std::vector<component>&);

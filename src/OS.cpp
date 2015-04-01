@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Mon 30 Mar 2015 07:07:14 PM PDT
+ * Last Modified: Tue 31 Mar 2015 10:22:20 PM PDT
  *
 */
 #include <OS.h>
@@ -142,16 +142,14 @@ OS::~OS()
 /* Sample meta-data program
  * ========================
  *
- *  Start
- *  Program Meta-Data Code:
+ *  Start Program Meta-Data Code:
  *  S(start)0; A(start)0; P(run)14; I(hard drive)13; O(hard drive)15;
  *  P(run)12; O(hard drive)11; P(run)5; I(hard drive)12; O(hard drive)12;
  *  P(run)5; O(monitor)10; P(run)12; O(monitor)10; A(end)0; S(end)0.
  *  End Program Meta-Data Code.
 */
 
-
-void OS::ReadProgram(vector<component> &data) throw(MetadataReadException)
+void OS::ReadPrograms() throw(MetadataReadException)
 {
    ifstream metaFile;
    metaFile.open(m_Filename.c_str(), fstream::in);
@@ -165,22 +163,29 @@ void OS::ReadProgram(vector<component> &data) throw(MetadataReadException)
 
    //discard start line
    getline(metaFile, temp);
-   component next;
+   component nextComp;
 
    //Stop condition is when the type is S and operation is end
    do
    {
-      metaFile >> next.type;
+      vector<component> *nextProc = new vector<component>();
+      //each program ends with type A and operation end
+      do
+      {
+         metaFile >> nextComp.type;
 
-      //skip open paren character
-      metaFile.get();
-      getline(metaFile, next.operation, ')');
-      metaFile >> next.cost;
+         //skip open paren character
+         metaFile.get();
+         getline(metaFile, nextComp.operation, ')');
+         metaFile >> nextComp.cost;
 
-      //skip semicolon
-      metaFile.get();
-      data.push_back(next);
-   } while(!(next.type == 'S' && next.operation == "end"));
+         //skip semicolon
+         metaFile.get();
+         nextProc->push_back(nextComp);
+      } while(!(nextComp.type == 'A' && nextComp.operation == "end"));
+      ProcessControlBlock pcb(nextProc);
+      m_Programs.push_back(pcb);
+   } while(!(nextComp.type == 'S' && nextComp.operation == "end"));
    metaFile.close();
 }
 
