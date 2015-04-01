@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Tue 31 Mar 2015 11:21:52 PM PDT
+ * Last Modified: Tue 31 Mar 2015 11:56:32 PM PDT
  *
 */
 #include <OS.h>
@@ -227,14 +227,14 @@ void OS::Run()
                }
                break;
             case 'A': //Process start/stop
-               message << " - Process " << nextPCB->GetPID() << ": ";
+               message << " - OS: ";
                if(nextOperation->operation.compare("start") == 0)
                {
                   message << "starting process " << nextPCB->GetPID();
                }
                else
                {
-                  message << "ending process " << nextPCB->GetPID();
+                  message << "removing process " << nextPCB->GetPID();
                }
                break;
             case 'P':  //Processing
@@ -246,7 +246,7 @@ void OS::Run()
                usleep(m_ProcTime * nextOperation->cost * 1000);
                gettimeofday(&now, NULL);
                
-               message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << " end processing action";
+               message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << ": end processing action";
                break;
             case 'I': //Input
                message << " - Process " << nextPCB->GetPID() << ": ";
@@ -314,6 +314,14 @@ void OS::Run()
          m_Logger->println(message.str());
          message.str("");
       }
+      if((nextPCB + 1) < m_Programs.end())
+      {
+         gettimeofday(&now, NULL);
+         message << time_diff(start, now) << " - OS: selecting next process";
+         m_Logger->println(message.str());
+         message.str("");
+      }
+
    }
    gettimeofday(&now, NULL);
    message << time_diff(start, now) << " - Simulator program ending";
