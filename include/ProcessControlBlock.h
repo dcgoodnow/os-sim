@@ -1,13 +1,13 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Tue 31 Mar 2015 10:39:40 PM PDT
+ * Last Modified: Tue 31 Mar 2015 10:45:14 PM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
 #define __PROCESS_CONTROL_BLOCK_H
 
 #include <vector>
-#include <OS.h>
+#include <Component.h>
 
 using namespace std;
 class ProcessControlBlock
