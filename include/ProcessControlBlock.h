@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Mon 30 Mar 2015 07:21:57 PM PDT
+ * Last Modified: Tue 31 Mar 2015 10:39:40 PM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -21,6 +21,8 @@ class ProcessControlBlock
    public:
       ProcessControlBlock(vector<component>*);
       int GetPID();
+      vector<component>::iterator GetBeginIter();
+      vector<component>::iterator GetEndIter();
 };
 
 

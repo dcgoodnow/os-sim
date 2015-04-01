@@ -13,3 +13,12 @@ int ProcessControlBlock::GetPID()
 {
    return m_PID;
 }
+
+vector<component>::iterator ProcessControlBlock::GetBeginIter()
+{
+   return m_ProgramCode->begin();
+}
+vector<component>::iterator ProcessControlBlock::GetEndIter()
+{
+   return m_ProgramCode->end();
+}

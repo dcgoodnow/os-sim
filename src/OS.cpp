@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Tue 31 Mar 2015 10:22:20 PM PDT
+ * Last Modified: Tue 31 Mar 2015 10:39:28 PM PDT
  *
 */
 #include <OS.h>
@@ -190,7 +190,7 @@ void OS::ReadPrograms() throw(MetadataReadException)
 }
 
 
-void OS::Run(vector<component> &program)
+void OS::Run()
 {
    timeval start, now;
    pthread_t ioThread;
@@ -204,110 +204,114 @@ void OS::Run(vector<component> &program)
 
    gettimeofday(&start, NULL);
    m_Logger->println("0.000000 - Simulator program starting"); 
-   for(vector<component>::iterator next = program.begin(); next < program.end(); next++)
+   for(vector<ProcessControlBlock>::iterator nextPCB = m_Programs.begin(); nextPCB < m_Programs.end(); nextPCB++)
    {
-      gettimeofday(&now, NULL);
-      message << time_diff(start, now);
-      switch(next->type)
+      for(vector<component>::iterator nextOperation = nextPCB->GetBeginIter(); 
+            nextOperation < nextPCB->GetEndIter(); nextOperation++)
       {
-         case 'S':  //O/S Control
-            message << " - OS: ";
-            if(next->operation.compare("start") == 0)
-            {
-               message << "preparing process 1";
-            }
-            else
-            {
-               message << "removing process 1";
-            }
-            break;
-         case 'A': //Process start/stop
-            message << " - Process 1: ";
-            if(next->operation.compare("start") == 0)
-            {
-               message << "starting process 1";
-            }
-            else
-            {
-               message << "ending process 1";
-            }
-            break;
-         case 'P':  //Processing
-            message << " - Process 1: start processing action";
-            m_Logger->println(message.str());
+         gettimeofday(&now, NULL);
+         message << time_diff(start, now);
+         switch(nextOperation->type)
+         {
+            case 'S':  //O/S Control
+               message << " - OS: ";
+               if(nextOperation->operation.compare("start") == 0)
+               {
+                  message << "preparing process 1";
+               }
+               else
+               {
+                  message << "removing process 1";
+               }
+               break;
+            case 'A': //Process start/stop
+               message << " - Process 1: ";
+               if(nextOperation->operation.compare("start") == 0)
+               {
+                  message << "starting process 1";
+               }
+               else
+               {
+                  message << "ending process 1";
+               }
+               break;
+            case 'P':  //Processing
+               message << " - Process 1: start processing action";
+               m_Logger->println(message.str());
 
-            //reset message
-            message.str("");
-            usleep(m_ProcTime * next->cost * 1000);
-            gettimeofday(&now, NULL);
-            
-            message << time_diff(start, now) << " - Process 1: end processing action";
-            break;
-         case 'I': //Input
-            message << " - Process 1: ";
-            if(next->operation.compare("hard drive") == 0)
-            {
-               message << "start hard drive input";
-               timeMult = m_HardDriveTime;
-            }
-            else
-            {
-               message << "start keyboard input";
-               timeMult = m_KeyboardTime;
-            }
-            m_Logger->println(message.str());
-            message.str("");
-            delay = timeMult * next->cost;
+               //reset message
+               message.str("");
+               usleep(m_ProcTime * nextOperation->cost * 1000);
+               gettimeofday(&now, NULL);
+               
+               message << time_diff(start, now) << " - Process 1: end processing action";
+               break;
+            case 'I': //Input
+               message << " - Process 1: ";
+               if(nextOperation->operation.compare("hard drive") == 0)
+               {
+                  message << "start hard drive input";
+                  timeMult = m_HardDriveTime;
+               }
+               else
+               {
+                  message << "start keyboard input";
+                  timeMult = m_KeyboardTime;
+               }
+               m_Logger->println(message.str());
+               message.str("");
+               delay = timeMult * nextOperation->cost;
 
-            //perform I/O operation in separate thread
-            pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
-            pthread_join(ioThread, &status);
-            gettimeofday(&now, NULL);
-            
-            message << time_diff(start, now) << " - Process 1: ";
-            if(next->operation.compare("hard drive") == 0)
-            {
-               message << "end hard drive input";
-            }
-            else
-            {
-               message << "end keyboard input";
-            }
-            break;
-         case 'O':  //Output
-            message << " - Process 1: ";
-            if(next->operation.compare("hard drive") == 0)
-            {
-               message << "start hard drive output";
-               timeMult = m_HardDriveTime;
-            }
-            else
-            {
-               message << "start monitor output";
-               timeMult = m_DisplayTime;
-            }
-            m_Logger->println(message.str());
-            message.str("");
-            delay = timeMult * next->cost;
+               //perform I/O operation in separate thread
+               pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
+               pthread_join(ioThread, &status);
+               gettimeofday(&now, NULL);
+               
+               message << time_diff(start, now) << " - Process 1: ";
+               if(nextOperation->operation.compare("hard drive") == 0)
+               {
+                  message << "end hard drive input";
+               }
+               else
+               {
+                  message << "end keyboard input";
+               }
+               break;
+            case 'O':  //Output
+               message << " - Process 1: ";
+               if(nextOperation->operation.compare("hard drive") == 0)
+               {
+                  message << "start hard drive output";
+                  timeMult = m_HardDriveTime;
+               }
+               else
+               {
+                  message << "start monitor output";
+                  timeMult = m_DisplayTime;
+               }
+               m_Logger->println(message.str());
+               message.str("");
+               delay = timeMult * nextOperation->cost;
 
-            //Perform ouput operation in separate thread
-            pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
-            pthread_join(ioThread, &status);
-            gettimeofday(&now, NULL);
-            
-            message << time_diff(start, now) << " - Process 1: ";
-            if(next->operation.compare("hard drive") == 0)
-            {
-               message << "end hard drive output";
-            }
-            else
-            {
-               message << "end monitor output";
-            }
-            break;
+               //Perform ouput operation in separate thread
+               pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
+               pthread_join(ioThread, &status);
+               gettimeofday(&now, NULL);
+               
+               message << time_diff(start, now) << " - Process 1: ";
+               if(nextOperation->operation.compare("hard drive") == 0)
+               {
+                  message << "end hard drive output";
+               }
+               else
+               {
+                  message << "end monitor output";
+               }
+               break;
+         }
+         m_Logger->println(message.str());
+         message.str("");
       }
-      m_Logger->println(message.str());
-      message.str("");
    }
    gettimeofday(&now, NULL);
    message << time_diff(start, now) << " - Simulator program ending";

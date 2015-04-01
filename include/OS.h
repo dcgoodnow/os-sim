@@ -2,7 +2,7 @@
  * OS.H
  * Daniel Goodnow
  *
- * Last Modified: Tue 31 Mar 2015 10:08:21 PM PDT
+ * Last Modified: Tue 31 Mar 2015 10:39:37 PM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -94,7 +94,7 @@ class OS{
       void ReadPrograms() throw (MetadataReadException);
 
       //Runs the simulator using the given vector of components
-      void Run(std::vector<component>&);
+      void Run();
 
       //compute total time required for a program
       int ComputeCost(std::vector<component> program);
