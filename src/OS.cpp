@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Thu 02 Apr 2015 05:28:05 PM PDT
+ * Last Modified: Thu 02 Apr 2015 10:15:51 PM PDT
  *
 */
 #include <OS.h>
@@ -161,29 +161,41 @@ void OS::ReadPrograms() throw(MetadataReadException)
    getline(metaFile, temp);
    component nextComp;
 
-   //Stop condition is when the type is S and operation is end
+   //Stop condition for this loop is when the type is S and operation is end
    do
    {
       vector<component> *nextProc = new vector<component>();
+
       //each program ends with type A and operation end
       do
       {
          metaFile >> nextComp.type;
 
-         //skip open paren character
-         metaFile.get();
+         //skip open parentheses character
+         metaFile.ignore();
+
+         //get operation
          getline(metaFile, nextComp.operation, ')');
+
+         //get operation cost
          metaFile >> nextComp.cost;
 
          //skip semicolon
-         metaFile.get();
+         metaFile.ignore();
+
          nextProc->push_back(nextComp);
       } while(!(nextComp.type == 'A' && nextComp.operation == "end"));
+
+      //create new process control block
       ProcessControlBlock pcb(nextProc);
+
       m_Programs.push_back(pcb);
+
       //skip space
       metaFile.get();
+
    } while(metaFile.peek() != 'S');
+
    metaFile.close();
 }
 

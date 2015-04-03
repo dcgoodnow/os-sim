@@ -10,6 +10,11 @@ ProcessControlBlock::ProcessControlBlock(vector<component>* program):
    m_PID = ++nextPID;
 }
 
+ProcessControlBlock::~ProcessControlBlock()
+{
+   delete m_ProgramCode;
+}
+
 int ProcessControlBlock::GetPID()
 {
    return m_PID;
