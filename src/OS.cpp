@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Thu 02 Apr 2015 10:49:14 PM PDT
+ * Last Modified: Fri 03 Apr 2015 01:19:06 PM PDT
  *
 */
 #include <OS.h>
@@ -214,9 +214,9 @@ void OS::Run()
          {
             nextPCB->SetCost(ComputeCost(nextPCB->GetBeginIter(), nextPCB->GetEndIter()));
          }
+         sort(m_Programs.begin(), m_Programs.end(), ProcessControlBlock::CompareCost);
          break;
    }
-   sort(m_Programs.begin(), m_Programs.end(), ProcessControlBlock::CompareCost);
 
    timeval start, now;
    pthread_t ioThread;

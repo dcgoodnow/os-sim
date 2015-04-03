@@ -1,14 +1,20 @@
 #include <ProcessControlBlock.h>
 #include <iostream>
+#include <limits.h>
 
-int ProcessControlBlock::nextPID = 0;
+int ProcessControlBlock::m_nextPID = 0;
 
 ProcessControlBlock::ProcessControlBlock(vector<component>* program):
    m_Cost(0)
 {
    m_ProgramCode = program;
 
-   m_PID = ++nextPID;
+   //reset PID counter if it reaches max integer value
+   if(m_nextPID > INT_MAX)
+   {
+      m_nextPID = 0;
+   }
+   m_PID = ++m_nextPID;
 }
 
 ProcessControlBlock::~ProcessControlBlock()

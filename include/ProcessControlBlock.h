@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Thu 02 Apr 2015 10:19:06 PM PDT
+ * Last Modified: Fri 03 Apr 2015 01:18:43 PM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -21,7 +21,7 @@ class ProcessControlBlock
       int m_PID;
 
       //process IDs are assigned in ascending order, starting at 1
-      static int nextPID;
+      static int m_nextPID;
 
       //Cost of running the metadata commands
       int m_Cost;

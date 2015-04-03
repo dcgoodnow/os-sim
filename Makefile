@@ -2,6 +2,7 @@ IDIR = include
 SDIR = src
 CXX = g++
 CXXFLAGS = -g -pthread -Wall -I$(IDIR)
+TARGET = OS_Phase_2
 
 ODIR = obj
 _DEPS = OS.h MonitorLogger.h BothLogger.h FileLogger.h ProcessControlBlock.h
@@ -14,11 +15,11 @@ $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
 	mkdir -p $(ODIR)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-simulator: $(OBJ)
+$(TARGET): $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ simulator
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ $(TARGET)
 	
