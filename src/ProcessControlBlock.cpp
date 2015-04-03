@@ -1,4 +1,5 @@
 #include <ProcessControlBlock.h>
+#include <iostream>
 
 int ProcessControlBlock::nextPID = 0;
 
@@ -12,7 +13,6 @@ ProcessControlBlock::ProcessControlBlock(vector<component>* program):
 
 ProcessControlBlock::~ProcessControlBlock()
 {
-   delete m_ProgramCode;
 }
 
 int ProcessControlBlock::GetPID()

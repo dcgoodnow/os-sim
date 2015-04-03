@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Thu 02 Apr 2015 10:15:51 PM PDT
+ * Last Modified: Thu 02 Apr 2015 10:49:14 PM PDT
  *
 */
 #include <OS.h>
@@ -192,7 +192,7 @@ void OS::ReadPrograms() throw(MetadataReadException)
       m_Programs.push_back(pcb);
 
       //skip space
-      metaFile.get();
+      metaFile.ignore();
 
    } while(metaFile.peek() != 'S');
 

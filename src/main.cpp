@@ -1,11 +1,15 @@
 #include <iostream>
 #include <OS.h>
-#include <vector>
 
 using namespace std;
 
 int main(int argc, char* argv[])
 {
+
+   if(argc < 2)
+   {
+      cerr << "Usage: ./OS_Phase_2 [configfile]";
+   }
    OS os(argv[1]);
 
    try{
@@ -13,16 +17,15 @@ int main(int argc, char* argv[])
    }
    catch(exception e)
    {
-      cout << e.what();
+      cerr << e.what();
    }
 
-   vector<component> comps;
    try{
       os.ReadPrograms();
    }
    catch(exception e)
    {
-      cout << e.what();
+      cerr << e.what();
    }
 
    os.Run();
