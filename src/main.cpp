@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 
    if(argc < 2)
    {
-      cerr << "Usage: ./OS_Phase_2 [configfile]";
+      cerr << "Usage: ./OS_Phase_2 [configfile]\n";
    }
    OS os(argv[1]);
 
@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
    }
    catch(exception e)
    {
-      cerr << e.what();
+      cerr << e.what() << endl;
    }
 
    try{
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
    }
    catch(exception e)
    {
-      cerr << e.what();
+      cerr << e.what() << endl;
    }
 
    os.Run();
