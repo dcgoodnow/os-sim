@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Fri 03 Apr 2015 01:19:06 PM PDT
+ * Last Modified: Fri 03 Apr 2015 01:29:22 PM PDT
  *
 */
 #include <OS.h>
@@ -58,7 +58,7 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    //discard first line 
    getline(config, temp);
    
-   //Discard version/phase descriptor
+   //Discard descriptor
    config.ignore(255, ':');
    
    config >> m_Version;

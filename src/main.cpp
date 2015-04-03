@@ -9,6 +9,7 @@ int main(int argc, char* argv[])
    if(argc < 2)
    {
       cerr << "Usage: ./OS_Phase_2 [configfile]\n";
+      return -1;
    }
    OS os(argv[1]);
 
