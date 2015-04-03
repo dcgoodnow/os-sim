@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Wed 01 Apr 2015 03:51:05 PM PDT
+ * Last Modified: Thu 02 Apr 2015 05:28:05 PM PDT
  *
 */
 #include <OS.h>
@@ -61,11 +61,6 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    //Discard version/phase descriptor
    config.ignore(255, ':');
    
-   if(temp.compare("Version/Phase") != 0)
-   {
-      config.close();
-      throw MalformedConfigException();
-   }
    config >> m_Version;
 
    config.ignore(255, ':');
@@ -303,10 +298,15 @@ void OS::Run()
                   message << "start hard drive output";
                   timeMult = m_HardDriveTime;
                }
-               else
+               else if(nextOperation->operation.compare("monitor") == 0)
                {
                   message << "start monitor output";
                   timeMult = m_DisplayTime;
+               }
+               else
+               {
+                  message << "start printer output";
+                  timeMult = m_PrinterTime;
                }
                m_Logger->println(message.str());
                message.str("");
