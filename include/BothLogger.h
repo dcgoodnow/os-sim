@@ -1,5 +1,4 @@
 /* BothLogger.h
- * Daniel Goodnow
  *
  * Last Modified: Sat 21 Mar 2015 09:22:29 PM PDT
  *

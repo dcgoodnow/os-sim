@@ -1,5 +1,4 @@
 /* Logger.h
- * Daniel Goodnow
  *
  * Last Modified: Sat 21 Mar 2015 09:31:04 PM PDT
 */

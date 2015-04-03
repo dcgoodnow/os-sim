@@ -1,5 +1,4 @@
 /* MonitorLogger.h
- * Daniel Goodnow
  *
  * Last Modified: Sat 21 Mar 2015 09:27:37 PM PDT
  *

@@ -1,8 +1,7 @@
 /*******************************************
  * OS.H
- * Daniel Goodnow
  *
- * Last Modified: Wed 01 Apr 2015 12:56:31 AM PDT
+ * Last Modified: Thu 02 Apr 2015 05:24:49 PM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -102,7 +101,6 @@ class OS{
 
       //Runs the simulator using the given vector of components
       void Run();
-
 };
 
 

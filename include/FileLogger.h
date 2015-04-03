@@ -1,5 +1,4 @@
 /* FileLogger.h
- * Daniel Goodnow
  *
  * Last Modified: Sat 21 Mar 2015 09:25:43 PM PDT
  *
