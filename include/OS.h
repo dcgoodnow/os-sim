@@ -1,7 +1,7 @@
 /*******************************************
  * OS.H
  *
- * Last Modified: Wed 22 Apr 2015 01:07:00 AM PDT
+ * Last Modified: Wed 22 Apr 2015 02:46:47 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -45,6 +45,7 @@ struct IO_OPargs
    int time;
    pthread_mutex_t *IOCompMtx;
    bool *IOComp;
+   std::vector<ProcessControlBlock> *readyQueue;
 };
 
 /* OS Class
@@ -97,6 +98,9 @@ class OS{
       //programs to run
       std::vector<ProcessControlBlock> m_Programs;
 
+      //programs to run
+      std::vector<ProcessControlBlock> m_ReadyQueue;
+
       //IO Complete flag
       bool m_IOComplete;
 
@@ -113,6 +117,8 @@ class OS{
 
       //simulates processing in the cpu
       void Process(component&);
+
+      void DoOperation(ProcessControlBlock, timeval);
 
    public:
       OS(std::string configFile);

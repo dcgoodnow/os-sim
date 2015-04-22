@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Wed 22 Apr 2015 12:33:55 AM PDT
+ * Last Modified: Wed 22 Apr 2015 01:57:49 AM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -42,7 +42,10 @@ class ProcessControlBlock
    public:
 
       //constructor
+      ProcessControlBlock();
       ProcessControlBlock(vector<component>*);
+      ProcessControlBlock(const ProcessControlBlock& pcb);
+      ProcessControlBlock& operator=(const ProcessControlBlock& pcb);
       ~ProcessControlBlock();
       int GetPID();
       vector<component>::iterator GetBeginIter();
@@ -55,6 +58,8 @@ class ProcessControlBlock
       ProcessState GetState();
 
       void IncrementCounter();
+
+      vector<component>::iterator GetProgramCounter();
 };
 
 
