@@ -1,7 +1,7 @@
 /*******************************************
  * OS.H
  *
- * Last Modified: Wed 22 Apr 2015 12:44:11 AM PDT
+ * Last Modified: Wed 22 Apr 2015 01:07:00 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -58,7 +58,7 @@ class OS{
    private:
 
       //Scheduling types
-      enum SCHEDULING {FIFO, SJF};
+      enum SCHEDULING {FIFO, RR};
 
       std::string m_ConfigFile;
 

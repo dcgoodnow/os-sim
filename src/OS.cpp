@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Wed 22 Apr 2015 12:44:33 AM PDT
+ * Last Modified: Wed 22 Apr 2015 01:06:56 AM PDT
  *
 */
 #include <OS.h>
@@ -70,19 +70,22 @@ void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)
    
    
    config >> temp;
-   if(temp.compare("FIFO") == 0)
+   if(temp.compare("FIFO-P") == 0)
    {
       m_ScheduleType = FIFO;
    }
-   else if(temp.compare("SJF") == 0)
+   else if(temp.compare("RR") == 0)
    {
-      m_ScheduleType = SJF;
+      m_ScheduleType = RR;
    }
    else
    {
       config.close();
       throw MalformedConfigException();
    }
+
+   config.ignore(255, ':');
+   config >> m_Quantum;
 
    config.ignore(255, ':');
    config >> m_ProcTime;
@@ -202,21 +205,6 @@ void OS::ReadPrograms() throw(MetadataReadException)
 
 void OS::Run()
 {
-   //calculate process order
-   switch(m_ScheduleType)
-   {
-      case FIFO:
-         //already in fifo order
-         break;
-      case SJF:
-         for(vector<ProcessControlBlock>::iterator nextPCB = m_Programs.begin(); nextPCB < m_Programs.end();
-               nextPCB++)
-         {
-            nextPCB->SetCost(ComputeCost(nextPCB->GetBeginIter(), nextPCB->GetEndIter()));
-         }
-         sort(m_Programs.begin(), m_Programs.end(), ProcessControlBlock::CompareCost);
-         break;
-   }
 
    timeval start, now;
    pthread_t ioThread;
@@ -271,6 +259,7 @@ void OS::Run()
                //reset message
                message.str("");
                Process(*nextOperation);
+               nextPCB->SetState(READY);
                gettimeofday(&now, NULL);
                
                message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << ": end processing action";
@@ -460,8 +449,6 @@ void OS::Process(component &comp)
    }
    //subtract the cycles completed from the cost
    comp.cost -= cycles;
-
-   
 }
 bool OS::Interrupt()
 {
