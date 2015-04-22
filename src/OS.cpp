@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Wed 22 Apr 2015 03:23:59 AM PDT
+ * Last Modified: Wed 22 Apr 2015 03:38:40 PM PDT
  *
 */
 #include <OS.h>
@@ -40,6 +40,7 @@ OS::OS(string configFile):
    m_Logger(NULL)
 {
    m_ConfigFile = configFile;
+   pthread_mutex_init(&m_IOCompleteMtx, NULL);
 }
 
 void OS::ReadConfig() throw (ConfigReadException, MalformedConfigException)

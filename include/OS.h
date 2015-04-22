@@ -1,7 +1,7 @@
 /*******************************************
  * OS.H
  *
- * Last Modified: Wed 22 Apr 2015 02:46:47 AM PDT
+ * Last Modified: Wed 22 Apr 2015 03:38:44 PM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -105,7 +105,7 @@ class OS{
       bool m_IOComplete;
 
       //IO Complete mutex
-      pthread_mutex_t m_IOCompleteMtx = PTHREAD_MUTEX_INITIALIZER;
+      pthread_mutex_t m_IOCompleteMtx;
 
 
       /** private functions **/
