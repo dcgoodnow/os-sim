@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Fri 03 Apr 2015 01:18:43 PM PDT
+ * Last Modified: Wed 22 Apr 2015 12:33:55 AM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <Component.h>
+enum ProcessState { START, READY, RUNNING, BLOCKED, EXIT };
 
 using namespace std;
 class ProcessControlBlock
@@ -34,6 +35,9 @@ class ProcessControlBlock
       //compute cost of a program
       int ComputeCost();
 
+      //state
+      ProcessState m_State;
+
 
    public:
 
@@ -46,6 +50,11 @@ class ProcessControlBlock
       static bool CompareCost(const ProcessControlBlock& lhs, const ProcessControlBlock& rhs);
       void SetCost(const int cost);
       int GetCost();
+
+      void SetState(ProcessState newState);
+      ProcessState GetState();
+
+      void IncrementCounter();
 };
 
 

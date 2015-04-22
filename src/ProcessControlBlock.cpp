@@ -15,6 +15,8 @@ ProcessControlBlock::ProcessControlBlock(vector<component>* program):
       m_nextPID = 0;
    }
    m_PID = ++m_nextPID;
+
+   m_State = START;
 }
 
 ProcessControlBlock::~ProcessControlBlock()
@@ -55,4 +57,19 @@ void ProcessControlBlock::SetCost(const int cost)
 int ProcessControlBlock::GetCost()
 {
    return m_Cost;
+}
+
+void ProcessControlBlock::SetState(ProcessState newState)
+{
+   m_State = newState;
+}
+
+ProcessState ProcessControlBlock::GetState()
+{
+   return m_State;
+}
+
+void ProcessControlBlock::IncrementCounter()
+{
+   m_ProgramCounter++;
 }

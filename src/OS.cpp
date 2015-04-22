@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Fri 03 Apr 2015 01:29:22 PM PDT
+ * Last Modified: Wed 22 Apr 2015 12:44:33 AM PDT
  *
 */
 #include <OS.h>
@@ -221,7 +221,10 @@ void OS::Run()
    timeval start, now;
    pthread_t ioThread;
    void* status;
-   int timeMult, delay;
+   int timeMult;
+   IO_OPargs ioArgs;
+   ioArgs.IOCompMtx = &m_IOCompleteMtx;
+   ioArgs.IOComp = &m_IOComplete;
 
    //used for building the log messages
    ostringstream message;
@@ -267,7 +270,7 @@ void OS::Run()
 
                //reset message
                message.str("");
-               usleep(m_ProcTime * nextOperation->cost * 1000);
+               Process(*nextOperation);
                gettimeofday(&now, NULL);
                
                message << time_diff(start, now) << " - Process " << nextPCB->GetPID() << ": end processing action";
@@ -286,10 +289,11 @@ void OS::Run()
                }
                m_Logger->println(message.str());
                message.str("");
-               delay = timeMult * nextOperation->cost;
+               ioArgs.time = timeMult * nextOperation->cost;
+               ioArgs.PCB = &*nextPCB;
 
                //perform I/O operation in separate thread
-               pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
+               pthread_create(&ioThread, NULL, IO_OP, (void *)&ioArgs);
                pthread_join(ioThread, &status);
                gettimeofday(&now, NULL);
                
@@ -322,10 +326,10 @@ void OS::Run()
                }
                m_Logger->println(message.str());
                message.str("");
-               delay = timeMult * nextOperation->cost;
+               ioArgs.time = timeMult * nextOperation->cost;
 
                //Perform ouput operation in separate thread
-               pthread_create(&ioThread, NULL, IO_OP, (void *)&delay);
+               pthread_create(&ioThread, NULL, IO_OP, (void *)&ioArgs);
                pthread_join(ioThread, &status);
                gettimeofday(&now, NULL);
                
@@ -400,9 +404,20 @@ int OS::ComputeCost(vector<component>::iterator begin, vector<component>::iterat
  * Simple threadable function which sleeps for the amount specified. Uses
  * an int type as the passed argument
 */
-void* IO_OP(void* args)
+void* IO_OP(void* arg)
 {
-   usleep(*(int *)args * 1000);
+   IO_OPargs* args = (IO_OPargs*)arg;
+   timeval start, now;
+   gettimeofday(&start, NULL);
+   do
+   {
+      gettimeofday(&now, NULL);
+   }while(time_diff(start, now) < (double)args->time/1000);
+   pthread_mutex_lock(args->IOCompMtx);
+   args->PCB->SetState(READY);
+   args->PCB->IncrementCounter();
+   *(args->IOComp) = true;
+   pthread_mutex_unlock(args->IOCompMtx);
    pthread_exit(NULL);
 }
 
@@ -426,3 +441,34 @@ double time_diff(timeval x , timeval y)
    return diff / 1000000;
 }
 
+void OS::Process(component &comp)
+{
+   int cycles = 0;
+   do
+   {
+      usleep(m_ProcTime * 1000);
+      cycles ++;
+   //Check for an interrupt, going over the allowed quantum time, and if we're finished 
+   //processing this component
+   }while(!Interrupt() && cycles < m_Quantum && cycles < comp.cost);
+
+   if(Interrupt())
+   {
+      pthread_mutex_lock(&m_IOCompleteMtx);
+      m_IOComplete = false;
+      pthread_mutex_unlock(&m_IOCompleteMtx);
+   }
+   //subtract the cycles completed from the cost
+   comp.cost -= cycles;
+
+   
+}
+bool OS::Interrupt()
+{
+   bool iocomp;
+   pthread_mutex_lock(&m_IOCompleteMtx);
+   iocomp = m_IOComplete;
+   pthread_mutex_unlock(&m_IOCompleteMtx);
+   return iocomp;
+
+}

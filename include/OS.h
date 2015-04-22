@@ -1,13 +1,14 @@
 /*******************************************
  * OS.H
  *
- * Last Modified: Thu 02 Apr 2015 05:24:49 PM PDT
+ * Last Modified: Wed 22 Apr 2015 12:44:11 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
 
 #include <string>
 #include <vector>
+#include <queue>
 #include <Logger.h>
 #include <exception>
 #include <Component.h>
@@ -38,6 +39,14 @@ class MetadataReadException: public std::exception
    }
 };
 
+struct IO_OPargs
+{
+   ProcessControlBlock* PCB;
+   int time;
+   pthread_mutex_t *IOCompMtx;
+   bool *IOComp;
+};
+
 /* OS Class
  * ========
  *
@@ -60,6 +69,9 @@ class OS{
 
       //scheduling type
       SCHEDULING m_ScheduleType;
+
+      //Quantum time (cycles)
+      int m_Quantum;
 
       //Processor cycle duration (msec)
       int m_ProcTime;
@@ -85,10 +97,22 @@ class OS{
       //programs to run
       std::vector<ProcessControlBlock> m_Programs;
 
+      //IO Complete flag
+      bool m_IOComplete;
+
+      //IO Complete mutex
+      pthread_mutex_t m_IOCompleteMtx = PTHREAD_MUTEX_INITIALIZER;
+
+
       /** private functions **/
 
       //compute total time required for a program
       int ComputeCost(std::vector<component>::iterator begin, std::vector<component>::iterator end);
+
+      bool Interrupt();
+
+      //simulates processing in the cpu
+      void Process(component&);
 
    public:
       OS(std::string configFile);
@@ -101,6 +125,9 @@ class OS{
 
       //Runs the simulator using the given vector of components
       void Run();
+
+
+
 };
 
 
