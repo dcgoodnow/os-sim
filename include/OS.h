@@ -1,7 +1,7 @@
 /*******************************************
  * OS.H
  *
- * Last Modified: Wed 22 Apr 2015 03:38:44 PM PDT
+ * Last Modified: Sat 25 Apr 2015 02:25:25 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -41,11 +41,12 @@ class MetadataReadException: public std::exception
 
 struct IO_OPargs
 {
-   ProcessControlBlock* PCB;
+   ProcessControlBlock PCB;
    int time;
-   pthread_mutex_t *IOCompMtx;
-   bool *IOComp;
-   std::vector<ProcessControlBlock> *readyQueue;
+   pthread_mutex_t *intrptQueueMtx;
+   std::queue<ProcessControlBlock> *intrptQueue;
+   timeval start;
+   Logger *logger;
 };
 
 /* OS Class
@@ -101,11 +102,11 @@ class OS{
       //programs to run
       std::vector<ProcessControlBlock> m_ReadyQueue;
 
-      //IO Complete flag
-      bool m_IOComplete;
+      ///IO interrupt queue
+      std::queue<ProcessControlBlock> m_InterruptQueue;
 
-      //IO Complete mutex
-      pthread_mutex_t m_IOCompleteMtx;
+      //IO interrupt queue mutex
+      pthread_mutex_t m_InterruptQueueMutex;
 
 
       /** private functions **/
@@ -113,10 +114,10 @@ class OS{
       //compute total time required for a program
       int ComputeCost(std::vector<component>::iterator begin, std::vector<component>::iterator end);
 
-      bool Interrupt();
+      bool Interrupted();
 
       //simulates processing in the cpu
-      void Process(component&);
+      void Process(component&, timeval);
 
       void DoOperation(ProcessControlBlock, timeval);
 

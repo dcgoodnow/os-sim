@@ -1,6 +1,6 @@
 /* MonitorLogger.h
  *
- * Last Modified: Sat 21 Mar 2015 09:27:37 PM PDT
+ * Last Modified: Sat 25 Apr 2015 02:09:22 AM PDT
  *
 */
 #ifndef __MONITORLOGGER_H
@@ -17,6 +17,8 @@
 class MonitorLogger : public Logger
 {
    public:
+      MonitorLogger();
+
       //Prints a message to the standard output stream
       void print(const std::string& message);
 

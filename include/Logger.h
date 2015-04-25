@@ -1,6 +1,6 @@
 /* Logger.h
  *
- * Last Modified: Sat 21 Mar 2015 09:31:04 PM PDT
+ * Last Modified: Sat 25 Apr 2015 02:03:37 AM PDT
 */
 #ifndef __LOGGER_H
 #define __LOGGER_H
@@ -17,6 +17,8 @@
 */
 class Logger
 {
+   protected:
+      pthread_mutex_t m_OutputMutex;
 
    public:
       //Prints a message

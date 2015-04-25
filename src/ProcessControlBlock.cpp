@@ -42,8 +42,20 @@ ProcessControlBlock& ProcessControlBlock::operator=(const ProcessControlBlock& p
    m_Cost = pcb.m_Cost;
    m_PID = pcb.m_PID;
    m_State = pcb.m_State;
-   m_ProgramCode = new vector<component>(*pcb.m_ProgramCode);
-   m_ProgramCounter = pcb.m_ProgramCounter;
+   if(m_ProgramCode != NULL )
+   {
+      delete m_ProgramCode;
+   }
+   m_ProgramCode = new vector<component>;
+   for(vector<component>::iterator next = pcb.m_ProgramCode->begin(); next < pcb.m_ProgramCode->end(); next++)
+   {
+      m_ProgramCode->push_back(*next);
+      if(next == pcb.m_ProgramCounter)
+      {
+         cerr << "got here";
+         m_ProgramCounter = m_ProgramCode->end();
+      }
+   }
    return *this;
 }
 
