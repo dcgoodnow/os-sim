@@ -2,7 +2,7 @@ IDIR = include
 SDIR = src
 CXX = g++
 CXXFLAGS = -g -pthread -Wall -I$(IDIR)
-TARGET = OS_Phase_2
+TARGET = OS_Phase_3
 
 ODIR = obj
 _DEPS = OS.h MonitorLogger.h BothLogger.h FileLogger.h ProcessControlBlock.h

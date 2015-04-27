@@ -1,6 +1,6 @@
 /* OS.cpp
  *
- * Last Modified: Sat 25 Apr 2015 03:13:24 AM PDT
+ * Last Modified: Mon 27 Apr 2015 04:52:19 AM PDT
  *
 */
 #include <OS.h>
@@ -163,6 +163,8 @@ void OS::ReadPrograms() throw(MetadataReadException)
 
    //discard start line
    getline(metaFile, temp);
+   //ignore S type
+   metaFile.ignore(255, ';');
    component nextComp;
 
    //Stop condition for this loop is when the type is S and operation is end
@@ -218,23 +220,44 @@ void OS::Run()
    m_Logger->println("0.000000 - Simulator program starting"); 
    ProcessControlBlock currentPCB;
 
+   //add all programs to ready queue
+   for(vector<ProcessControlBlock>::iterator program = m_Programs.begin(); program < m_Programs.end(); program++)
+   {
+      program->SetState(READY);
+      m_ReadyQueue.push_back(*program);
+   }
+
 
    while(!m_Programs.empty())
    {
-      switch(m_ScheduleType)
+      if(!m_ReadyQueue.empty())
       {
-         case FIFO:
-            break;
-         case RR:
-            if(m_ReadyQueue.empty())
-            {
-               m_ReadyQueue.push_back(m_Programs.front());
-               m_Programs.erase(m_Programs.begin());
-            }
-            currentPCB = m_ReadyQueue.front();
-            m_ReadyQueue.erase(m_ReadyQueue.begin());
-            DoOperation(currentPCB, start);
-            break;
+         gettimeofday(&now, NULL);
+         message << time_diff(start, now) << " - OS: selecting next process";
+         m_Logger->println(message.str());
+         message.str("");
+         if(m_ScheduleType == FIFO)
+         {
+            sort(m_ReadyQueue.begin(), m_ReadyQueue.end(), ProcessControlBlock::ComparePID);
+         }
+
+         //'pop' next process and perform its operation
+         currentPCB = m_ReadyQueue.front();
+         m_ReadyQueue.erase(m_ReadyQueue.begin());
+         DoOperation(currentPCB, start, m_Quantum);
+      }
+      //if all programs are blocked or finished (ready queue empty) we need to check here for interrupts
+      else if(Interrupted())
+      {
+         //handle interrupts
+         pthread_mutex_lock(&m_InterruptQueueMutex);
+         while(!m_InterruptQueue.empty())
+         {
+            //move program from interrupt queue to ready queue
+            m_ReadyQueue.push_back( m_InterruptQueue.front());
+            m_InterruptQueue.pop();
+         }
+         pthread_mutex_unlock(&m_InterruptQueueMutex);
       }
    }
    gettimeofday(&now, NULL);
@@ -242,44 +265,6 @@ void OS::Run()
    m_Logger->println(message.str());
 }
 
-int OS::ComputeCost(vector<component>::iterator begin, vector<component>::iterator end)
-{
-   int cost = 0;
-   for(vector<component>::iterator nextComp = begin; nextComp < end; nextComp++)
-   {
-      switch(nextComp->type)
-      {
-         case 'S':
-         case 'A':
-            //these operations have no cost
-            break;
-         case 'P':
-            cost += nextComp->cost * m_ProcTime;
-            break;
-         case 'I':
-            if(nextComp->operation.compare("hard drive") == 0)
-            { 
-               cost += nextComp->cost * m_HardDriveTime;
-            }
-            else
-            {
-               cost += nextComp->cost * m_KeyboardTime;
-            }
-            break;
-         case 'O':
-            if(nextComp->operation.compare("hard drive") == 0)
-            {
-               cost += nextComp->cost * m_HardDriveTime;
-            }
-            else
-            {
-               cost += nextComp->cost * m_DisplayTime;
-            }
-            break;
-      }
-   }
-   return cost;
-}
 
 /*
  * Simple threadable function which sleeps for the amount specified. Uses
@@ -289,27 +274,33 @@ void* IO_OP(void* arg)
 {
    IO_OPargs* args = (IO_OPargs*)arg;
    timeval start, now;
+   component comp;
+   args->PCB.GetCurrentComponent(comp);
    gettimeofday(&start, NULL);
+
+   //simulate i/o time
    do
    {
       gettimeofday(&now, NULL);
    }while(time_diff(start, now) < (double)args->time/1000);
+
    ostringstream message;
    message.setf(ios::fixed, ios::floatfield);
    message.precision(6);
 
    gettimeofday(&now, NULL);
    message << time_diff(args->start, now) << " - Process " << args->PCB.GetPID() << ": end ";
-   if(args->PCB.GetProgramCounter()->type == 'i')
+   if(comp.type == 'i')  //input
    {
-      message << args->PCB.GetProgramCounter()->operation << " input";
+      message << comp.operation << " input";
    }
-   //output
-   else
+   else //output
    {
-      message << args->PCB.GetProgramCounter()->operation << " output";
+      message << comp.operation << " output";
    }
    args->logger->println(message.str());
+
+   //'send' interrupt
    pthread_mutex_lock(args->intrptQueueMtx);
    args->PCB.SetState(READY);
    args->PCB.IncrementCounter();
@@ -338,16 +329,28 @@ double time_diff(timeval x , timeval y)
    return diff / 1000000;
 }
 
-void OS::Process(component &comp, timeval start)
+void OS::Process(ProcessControlBlock &pcb, timeval start, int quantum)
 {
    int cycles = 0;
+   component *comp = pcb.GetCurrentComponentPtr();
+   timeval now;
+   //used for building the log messages
+   ostringstream message;
+   message.setf(ios::fixed, ios::floatfield);
+   message.precision(6);
+
    do
    {
       usleep(m_ProcTime * 1000);
       cycles ++;
+
    //Check for an interrupt, going over the allowed quantum time, and if we're finished 
    //processing this component
-   }while(!Interrupted() && cycles < m_Quantum && cycles < comp.cost);
+   }while(!Interrupted() && cycles < quantum && cycles < comp->cost);
+
+   gettimeofday(&now, NULL);
+   message << time_diff(start, now) << " - Process " << pcb.GetPID() << ": end processing action";
+   m_Logger->println(message.str());
 
    if(Interrupted())
    {
@@ -360,9 +363,31 @@ void OS::Process(component &comp, timeval start)
       }
       pthread_mutex_unlock(&m_InterruptQueueMutex);
    }
+
    //subtract the cycles completed from the cost
-   comp.cost -= cycles;
+   comp->cost -= cycles;
+
+   if(comp->cost > 0) //not done processing
+   {
+      pcb.SetState(READY);
+      m_ReadyQueue.push_back(pcb);
+   }
+   else
+   {
+      pcb.IncrementCounter();
+      if(cycles < quantum) //done processing and still have cycles left
+      {
+         DoOperation(pcb, start, quantum - cycles);
+      }
+      else
+      {
+         pcb.SetState(READY);
+         m_ReadyQueue.push_back(pcb);
+      }
+   }
 }
+
+//checks for interrupts
 bool OS::Interrupted()
 {
    bool interrupted = false;
@@ -373,18 +398,14 @@ bool OS::Interrupted()
 
 }
 
-void OS::DoOperation(ProcessControlBlock pcb, timeval start)
+void OS::DoOperation(ProcessControlBlock &pcb, timeval start, int quantum)
 {
    timeval  now;
    int timeMult;
    pthread_t ioThread;
-   void* status;
-   component comp = *pcb.GetProgramCounter();
-   IO_OPargs ioArgs;
-   ioArgs.intrptQueueMtx = &m_InterruptQueueMutex;
-   ioArgs.intrptQueue = &m_InterruptQueue;
-   ioArgs.start = start;
-   ioArgs.logger = m_Logger;
+   component comp;
+   pcb.GetCurrentComponent(comp);   
+   IO_OPargs *ioArgs;
 
    //used for building the log messages
    ostringstream message;
@@ -421,7 +442,16 @@ void OS::DoOperation(ProcessControlBlock pcb, timeval start)
          else
          {
             message << "removing process " << pcb.GetPID();
+            pcb.SetState(EXIT);
+
+            //get index of program to remvoe
+            vector<ProcessControlBlock>::iterator removeIndex = m_Programs.begin();
+            while(removeIndex->GetPID() != pcb.GetPID()) {removeIndex++;}
+
+            //remove it
+            m_Programs.erase(removeIndex);
          }
+         m_Logger->println(message.str());
          break;
       case 'P':  //Processing
          message << " - Process " << pcb.GetPID() << ": start processing action";
@@ -429,13 +459,10 @@ void OS::DoOperation(ProcessControlBlock pcb, timeval start)
 
          //reset message
          message.str("");
-         Process(comp, start);
-         pcb.SetState(READY);
-         pcb.IncrementCounter();
-         m_ReadyQueue.push_back(pcb);
+         pcb.SetState(RUNNING);
+         Process(pcb, start, quantum);
          gettimeofday(&now, NULL);
          
-         message << time_diff(start, now) << " - Process " << pcb.GetPID() << ": end processing action";
          break;
       case 'I': //Input
          message << " - Process " << pcb.GetPID() << ": ";
@@ -450,12 +477,17 @@ void OS::DoOperation(ProcessControlBlock pcb, timeval start)
             timeMult = m_KeyboardTime;
          }
          m_Logger->println(message.str());
-         message.str("");
-         ioArgs.time = timeMult * comp.cost;
-         ioArgs.PCB = pcb;
+         ioArgs = new IO_OPargs;
+         ioArgs->start = start;
+         ioArgs->logger = m_Logger;
+         ioArgs->intrptQueueMtx = &m_InterruptQueueMutex;
+         ioArgs->intrptQueue = &m_InterruptQueue;
+         ioArgs->time = timeMult * comp.cost;
+         pcb.SetState(BLOCKED);
+         ioArgs->PCB = pcb;
 
          //perform I/O operation in separate thread
-         pthread_create(&ioThread, NULL, IO_OP, (void *)&ioArgs);
+         pthread_create(&ioThread, NULL, IO_OP, (void *)ioArgs);
          break;
       case 'O':  //Output
          message << " - Process " << pcb.GetPID() << ": ";
@@ -475,14 +507,17 @@ void OS::DoOperation(ProcessControlBlock pcb, timeval start)
             timeMult = m_PrinterTime;
          }
          m_Logger->println(message.str());
-         message.str("");
-         ioArgs.time = timeMult * comp.cost;
-         ioArgs.PCB = pcb;
+         ioArgs = new IO_OPargs;
+         ioArgs->start = start;
+         ioArgs->logger = m_Logger;
+         ioArgs->intrptQueueMtx = &m_InterruptQueueMutex;
+         ioArgs->intrptQueue = &m_InterruptQueue;
+         ioArgs->time = timeMult * comp.cost;
+         pcb.SetState(BLOCKED);
+         ioArgs->PCB = pcb;
 
          //Perform ouput operation in separate thread
-         pthread_create(&ioThread, NULL, IO_OP, (void *)&ioArgs);
+         pthread_create(&ioThread, NULL, IO_OP, (void *)ioArgs);
          break;
    }
-   m_Logger->println(message.str());
-   message.str("");
 }

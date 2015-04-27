@@ -3,10 +3,11 @@
 
 #include <string>
 // Structure for meta program actions. 
-struct component {
-   char type;
-   std::string operation;
-   int cost;
+class component {
+   public:
+      char type;
+      std::string operation;
+      int cost;
 };
 
 #endif //__COMPONENT_H

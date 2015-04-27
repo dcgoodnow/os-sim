@@ -1,6 +1,6 @@
 /* ProcessControlBlock.h
  *
- * Last Modified: Sat 25 Apr 2015 02:25:14 AM PDT
+ * Last Modified: Mon 27 Apr 2015 04:44:10 AM PDT
 */
 
 #ifndef __PROCESS_CONTROL_BLOCK_H
@@ -28,7 +28,7 @@ class ProcessControlBlock
       int m_Cost;
 
       //current component
-      vector<component>::iterator m_ProgramCounter;
+      int m_ProgramCounter;
 
       /** Private Functions **/
 
@@ -51,15 +51,14 @@ class ProcessControlBlock
       vector<component>::iterator GetBeginIter();
       vector<component>::iterator GetEndIter();
       static bool CompareCost(const ProcessControlBlock& lhs, const ProcessControlBlock& rhs);
+      static bool ComparePID(const ProcessControlBlock& lhs, const ProcessControlBlock& rhs);
       void SetCost(const int cost);
       int GetCost();
-
       void SetState(ProcessState newState);
       ProcessState GetState();
-
       void IncrementCounter();
-
-      vector<component>::iterator GetProgramCounter();
+      void GetCurrentComponent(component&);
+      component* GetCurrentComponentPtr();
 };
 
 

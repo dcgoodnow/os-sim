@@ -1,7 +1,7 @@
 /*******************************************
  * OS.H
  *
- * Last Modified: Sat 25 Apr 2015 02:25:25 AM PDT
+ * Last Modified: Mon 27 Apr 2015 04:34:57 AM PDT
 */
 #ifndef __OS_H
 #define __OS_H
@@ -111,15 +111,13 @@ class OS{
 
       /** private functions **/
 
-      //compute total time required for a program
-      int ComputeCost(std::vector<component>::iterator begin, std::vector<component>::iterator end);
 
       bool Interrupted();
 
       //simulates processing in the cpu
-      void Process(component&, timeval);
+      void Process(ProcessControlBlock&, timeval, int);
 
-      void DoOperation(ProcessControlBlock, timeval);
+      void DoOperation(ProcessControlBlock&, timeval, int);
 
    public:
       OS(std::string configFile);
